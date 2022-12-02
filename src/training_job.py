@@ -4,8 +4,8 @@ from sklearn.model_selection import train_test_split
 
 from xgboost import XGBRegressor 
 
-from utils.data_utils import *
-from utils.model_utils import *
+from src.utils.data_utils import *
+from src.utils.model_utils import *
 
 # cleans data 
 def clean_data(df_p1, df_w1):
@@ -94,16 +94,21 @@ def get_model_response(input_object, model, mae):
 # used to assess whether or not newly trained model should be deployed (only if rmse is higher, can be changed to include all metrics)  
 def get_rmse():
 
-    rmse = pd.read_csv('/Users/lucmaingard/Dropbox/work/projects/solar/data/processed_stats/best_model_scores.csv')['rmse'].values
+    rmse = pd.read_csv('./data/processed_stats/best_model_scores.csv')['rmse'].values
 
     return rmse
 
 # function to train and evaluate not model (model is deployed if its rmse is better than the previous model)
 def train_model():
 
-    p1_url = '/Users/lucmaingard/Dropbox/work/projects/solar/data/raw/Plant_1_Generation_Data.csv'
-    w1_url = '/Users/lucmaingard/Dropbox/work/projects/solar/data/raw/Plant_1_Weather_Sensor_Data.csv'
+    # local location of data
+    #p1_url = '/Users/lucmaingard/Dropbox/work/projects/solar/data/raw/Plant_1_Generation_Data.csv'
+    #w1_url = '/Users/lucmaingard/Dropbox/work/projects/solar/data/raw/Plant_1_Weather_Sensor_Data.csv'
 
+    #download data 
+    p1_url = 'https://github.com/LucMaingard/solar-plant/blob/main/data/raw/Plant_1_Generation_Data.csv?raw=true'
+    w1_url = 'https://github.com/LucMaingard/solar-plant/blob/main/data/raw/Plant_1_Weather_Sensor_Data.csv?raw=true'
+    
     df_p1 = pd.read_csv(p1_url)
     df_w1 = pd.read_csv(w1_url)
     print("fetched data")
@@ -130,7 +135,7 @@ def train_model():
 
         scorer.save_model()
         df = pd.DataFrame(columns=['mae', 'mse', 'rmse'], data=[[mae, mse, rmse]])
-        df.to_csv('/Users/lucmaingard/Dropbox/work/projects/solar/data/processed_stats/best_model_scores.csv')
+        df.to_csv('./data/processed_stats/best_model_scores.csv')
 
         print('The new model outperformed the old one and was successfully deployed :)')
         result = 'The new model outperformed the old one and was successfully deployed :)'

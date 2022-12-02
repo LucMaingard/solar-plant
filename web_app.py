@@ -5,7 +5,7 @@ import pandas as pd
 
 from xgboost import XGBRegressor 
 
-from training_job import train_model
+from src.training_job import train_model
 
 app = FastAPI()
 
@@ -50,27 +50,39 @@ async def service_health():
 @app.get('/{x1}/{x2}/{x3}/{x4}/{x5}/{x6}/predict')
 async def model_predict(x1:int, x2:int, x3:float, x4:float, x5:float, x6:float):
 
-    model_path = './app/solar/models/model.json'
-
-    # load trained xgb model
-    model = XGBRegressor()
-    model.load_model(model_path)
-
-    """Predict with input"""
-    l1 = [x1, x2, x3, x4,x5]
-
-    mae = pd.read_csv('/Users/lucmaingard/Dropbox/work/projects/solar/data/processed_stats/best_model_scores.csv')['mae'].values
-
-    x = pd.DataFrame(columns=['hour', 'minute', 'ambient_temperature', 'module_temperature', 'irradiation'],data=[l1])
-
-    pred = model.predict(x)
+    model_path = './models/model.json'
     dict_out = {}
-    for count, value in enumerate(pred):
-        dict_out['expected_dc_power'] = float(value)
 
-    if (float(value)-mae)>=(x6):
-        dict_out['result']='low dc power output: needs maintenance'
+    # if irradiation levels are above 0 (below = no power output)
+    if x5>0:
+
+        # load trained xgb model
+        model = XGBRegressor()
+        model.load_model(model_path)
+
+        """Predict with input"""
+        l1 = [x1, x2, x3, x4,x5]
+
+        mae = pd.read_csv('./data/processed_stats/best_model_scores.csv')['mae'].values
+
+        x = pd.DataFrame(columns=['hour', 'minute', 'ambient_temperature', 'module_temperature', 'irradiation'],data=[l1])
+
+        pred = model.predict(x)
+        
+        for count, value in enumerate(pred):
+            dict_out['min_expected_dc_power'] = (float(value)-float(mae))
+            dict_out['actual_dc_power'] = float(x6)
+
+        if (float(value)-mae)>=(x6):
+            dict_out['result']='low dc power output: needs maintenance'
+        else:
+            dict_out['result']='normal dc power output: working well'
+
     else:
+        dict_out['min_expected_dc_power'] = float(0.0)
+        dict_out['actual_dc_power'] = float(x6)
         dict_out['result']='normal dc power output: working well'
+
+    
 
     return dict_out

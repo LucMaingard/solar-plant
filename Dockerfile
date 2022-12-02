@@ -8,6 +8,6 @@ COPY . .
 
 EXPOSE 8000
 
-RUN ["uvicorn", "main:app"]
+CMD ["uvicorn", "web_app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 

@@ -26,7 +26,7 @@ class DCPowerPredictor():
     # calculate mae, mse, rmse to evaluate model
     def evaluate(self, X, y):
 
-        PATH = './app/solar/data/'
+        PATH = './solar/data/'
 
         preds = self.dc_power_predictor.predict(X)
 
@@ -54,7 +54,7 @@ class DCPowerPredictor():
     def save_model(self):
 
         # model path
-        MODEL_DIR_PATH = './app/solar/models/'
+        MODEL_DIR_PATH = './solar/models/'
 
         # Save as JSON file
         if not os.path.exists(MODEL_DIR_PATH):
