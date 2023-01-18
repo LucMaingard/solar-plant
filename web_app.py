@@ -47,21 +47,21 @@ async def service_health():
     }
 
 # method to get prediction from most current model
-@app.get('/{x1}/{x2}/{x3}/{x4}/{x5}/{x6}/predict')
-async def model_predict(x1:int, x2:int, x3:float, x4:float, x5:float, x6:float):
+@app.get('/{hour}/{minute}/{temp}/{mod_temp}/{irradiation}/{dc_power}/predict')
+async def model_predict(hour:int, minute:int, temp:float, mod_temp:float, irradiation:float, dc_power:float):
 
     model_path = './models/model.json'
     dict_out = {}
 
     # if irradiation levels are above 0 (below = no power output)
-    if x5>0:
+    if irradiation>0:
 
         # load trained xgb model
         model = XGBRegressor()
         model.load_model(model_path)
 
         """Predict with input"""
-        l1 = [x1, x2, x3, x4,x5]
+        l1 = [hour, minute, temp, mod_temp, irradiation]
 
         mae = pd.read_csv('./data/processed_stats/best_model_scores.csv')['mae'].values
 
@@ -71,16 +71,16 @@ async def model_predict(x1:int, x2:int, x3:float, x4:float, x5:float, x6:float):
         
         for count, value in enumerate(pred):
             dict_out['min_expected_dc_power'] = (float(value)-float(mae))
-            dict_out['actual_dc_power'] = float(x6)
+            dict_out['actual_dc_power'] = float(dc_power)
 
-        if (float(value)-mae)>=(x6):
+        if (float(value)-mae)>=(dc_power):
             dict_out['result']='low dc power output: needs maintenance'
         else:
             dict_out['result']='normal dc power output: working well'
 
     else:
         dict_out['min_expected_dc_power'] = float(0.0)
-        dict_out['actual_dc_power'] = float(x6)
+        dict_out['actual_dc_power'] = float(dc_power)
         dict_out['result']='normal dc power output: working well'
 
     

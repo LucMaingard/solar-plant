@@ -18,7 +18,7 @@ class DCPowerPredictor():
     
     #fit data
     def fit(self, X, y):
-            
+        
         self.dc_power_predictor.fit(X, y.values.ravel())
         
         return
